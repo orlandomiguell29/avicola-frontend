@@ -1,0 +1,3 @@
+@tailwind base;@tailwind components;@tailwind utilities;
+*{box-sizing:border-box;}body{font-family:'Segoe UI',system-ui,sans-serif;background:#f3f4f6;}
+.text-2xs{font-size:0.65rem;}
