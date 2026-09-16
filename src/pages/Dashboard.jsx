@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [data, setData] = useState(null);
   const [fecha, setFecha] = useState(hoy());
   const [error, setError] = useState('');
+  const [downloading, setDownloading] = useState(false);
   const barRef = useRef(); const acumRef = useRef(); const donaRef = useRef();
   const barC = useRef(); const acumC = useRef(); const donaC = useRef();
 
@@ -82,6 +83,26 @@ export default function Dashboard() {
     return () => donaC.current?.destroy();
   }, [data?.desgloseEgresosMes]);
 
+  const handleExport = async () => {
+    try {
+      setDownloading(true);
+      const res = await api.get('/export/completo', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Reporte_Los_Flamencos_${fecha}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Export error:', e);
+      alert('Error al descargar el archivo de Excel.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   if (!data) return (
     <Layout header={<h2 className="font-bold text-xl">📊 Dashboard</h2>}>
       <div className="p-16 text-center text-gray-400 text-lg">Cargando datos...</div>
@@ -117,7 +138,13 @@ export default function Dashboard() {
               <p className="text-xs font-bold text-gray-700">📥 Exportar reporte completo a Excel</p>
               <p className="text-xs text-gray-400">3 hojas: Caja, Facturas y Nómina</p>
             </div>
-            <a href="/api/export/completo" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded text-sm transition">📊 Descargar Excel</a>
+            <button 
+              onClick={handleExport} 
+              disabled={downloading}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded text-sm transition disabled:opacity-50"
+            >
+              {downloading ? 'Generando Excel...' : '📊 Descargar Excel'}
+            </button>
           </div>
         )}
 
